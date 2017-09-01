@@ -4,112 +4,66 @@ var textocolor = document.getElementById('titulo_Juego');
 function color_uno() 
 {
     textocolor.style.color='#DCFF0E';
-    setTimeout('color_dos()', 2000);
+    setTimeout('color_dos()', 1500);
 }
 
 function color_dos() 
 {
-    textocolor.style.color='#FF0040';
-    setTimeout('color_tres()', 2000);
+    textocolor.style.color='white';
+    setTimeout('color_uno()', 1500);
 }
-
-function color_tres() 
-{
-    textocolor.style.color='#F5A9A9';
-    setTimeout('color_cuatro()', 2000);
-}
-
-function color_cuatro() 
-{
-    textocolor.style.color='#2E9AFE';
-    setTimeout('color_cinco()', 2000);
-}
-
-function color_cinco() 
-{
-    textocolor.style.color='#9AFE2E';
-    setTimeout('color_uno()', 2000);
-}
-
 color_uno()
 
-// Boton Para iniciar/Reiniciar el juego //
-
-$(".btn-reinicio").click(function()
+//Funcion de Random
+function getRandomInt(min, max) 
 {
-    alert("hola");
-    Cuenta_Atras();
-    
-    $(".btn-reinicio").html('Reiniciar');
-});
-
-// Temporizador //
-
-function Cuenta_Atras() 
-{
-    var Tiempo_Reloj = 5;
-    var Temporizador = document.getElementById('timer');
-    
-    var intervalo = setInterval(function()
-    {
-        Tiempo_Reloj--; 
-        Temporizador.innerHTML = Tiempo_Reloj;
-        if(Tiempo_Reloj == 0)
-        {
-            $(".panel-tablero").hide(1500,'linear');
-            $(".time").hide(1000,'linear');
-
-            $(".score").css("width: 500px");
-            $(".moves").css("width: 500px");
-            
-            $(".btn-reinicio").html('Iniciar');
-        }
-    }, 1000);
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min)) + min;
 }
 
-//Puntuacion//
+///Obtener Dulce
+function giveCandyArrays(arrayType, index) 
+{
+	var candyCol1 = $('.col-1').children();
+	var candyCol2 = $('.col-2').children();
+	var candyCol3 = $('.col-3').children();
+	var candyCol4 = $('.col-4').children();
+	var candyCol5 = $('.col-5').children();
+	var candyCol6 = $('.col-6').children();
+	var candyCol7 = $('.col-7').children();
 
-function saveFinalScore() 
-{
-    localStorage.setItem(getFinalScoreDate(), getTotalScore());
-    showBestScores();
-    removeNoBestScores();
-}
-    
-function showBestScores() 
-{
-    var bestScores = getBestScoreKeys();
-    var bestScoresList = document.getElementById('score-text');
-    if (bestScoresList) 
+	var candyColumns = $([candyCol1, candyCol2, candyCol3, candyCol4, candyCol5, candyCol6, candyCol7]);
+
+	if (typeof index === 'number') 
     {
-        clearList(bestScoresList);
-        
-        for (var i=0; i < bestScores.length; i++) 
-        {
-            addListElement(bestScoresList, bestScores[i], i==0?'negrita':null);
-            addListElement(bestScoresList, localStorage.getItem(bestScores[i]), i==0?'negrita':null);
-        }
-    }
+        var candyRow = $([candyCol1.eq(index), candyCol2.eq(index), candyCol3.eq(index), candyCol4.eq(index), candyCol5.eq(index), candyCol6.eq(index),candyCol7.eq(index)]);
+	} 
+    else 
+    {
+		index = '';
+	}
+
+	if (arrayType === 'columns') 
+    {
+        return candyColumns;
+	} 
+    else if (arrayType === 'rows' && index !== '') 
+    {
+        return candyRow;
+	}
 }
 
-function removeNoBestScores() 
+///// Fila de Dulces
+function candyRows(index) 
 {
-    var scoresToRemove = [];
-    var bestScoreKeys = getBestScoreKeys();
-    
-    for (var i=0; i < localStorage.length; i++) 
-    {
-        var key = localStorage.key(i);
-        
-        if (!bestScoreKeys.containsElement(key)) 
-        {
-            scoresToRemove.push(key);
-        }
-    }
-    
-    for (var j = 0; j < scoresToRemove.length; j++) 
-    {
-        var scoreToRemoveKey = scoresToRemove[j];
-        localStorage.removeItem(scoreToRemoveKey);
-    }
+    var candyRow = giveCandyArrays('rows', index);
+	return candyRow;
+}
+
+////Columna de Dulces
+function candyColumns(index) 
+{
+    var candyColumn = giveCandyArrays('columns');
+	return candyColumn[index];
 }
