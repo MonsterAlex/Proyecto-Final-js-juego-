@@ -41,6 +41,15 @@ $(function ()
 	initGame();
 });
 
+///Para Finalizar el juego
+function endGame() 
+{
+	$('div.panel-tablero, div.time').effect('fold');
+	$('h1.main-titulo').addClass('title-over')
+		.text('Game Over!');
+	$('div.score, div.moves, div.panel-score').width('100%');
+}
+
 //Funcion de Random
 function getRandomInt(min, max) 
 {
@@ -49,7 +58,7 @@ function getRandomInt(min, max)
     return Math.floor(Math.random() * (max - min)) + min;
 }
 
-///Obtener Dulce
+///Obtener Dulce, hijos de las columnas y crear un arreglo
 function giveCandyArrays(arrayType, index) 
 {
 	var candyCol1 = $('.col-1').children();
@@ -377,4 +386,103 @@ function constrainCandyMovement(event, candyDrag)
 	candyDrag.position.bottom = Math.min(100, candyDrag.position.bottom);
 	candyDrag.position.left = Math.min(100, candyDrag.position.left);
 	candyDrag.position.right = Math.min(100, candyDrag.position.right);
+}
+
+////////////////////////////
+function swapCandy(event, candyDrag) 
+{
+	var candyDrag = $(candyDrag.draggable);
+	var dragSrc = candyDrag.attr('src');
+	var candyDrop = $(this);
+	var dropSrc = candyDrop.attr('src');
+	
+    candyDrag.attr('src', dropSrc);
+	candyDrop.attr('src', dragSrc);
+
+	setTimeout(function () 
+    {
+		checkBoard();
+		
+        if ($('img.delete').length === 0) 
+        {
+			candyDrag.attr('src', dragSrc);
+			candyDrop.attr('src', dropSrc);
+		} 
+        else 
+        {
+			updateMoves();
+		}
+	}, 500);
+
+}
+
+//Mostrar Resultados del jueog
+function checkBoardPromise(result) 
+{
+	if (result) 
+    {
+		checkBoard();
+	}
+}
+
+//Actualizar el numero de movimientos al jalar un dulce 
+function updateMoves() 
+{
+	var actualValue = Number($('#movimientos-text').text());
+	var result = actualValue += 1;
+	
+    $('#movimientos-text').text(result);
+}
+
+//Animacion para la eliminacion de dulces
+function deletesCandyAnimation() 
+{
+	disableCandyEvents();
+	
+    $('img.delete').effect('pulsate', 400);
+	
+    $('img.delete').animate(
+        {
+			opacity: '0'
+		}, 
+        {
+			duration: 300
+		})
+		.animate(
+        {
+			opacity: '0'
+		}, 
+        
+        {
+			duration: 400,
+			complete: function () 
+            {
+				deletesCandy()
+                    .then(checkBoardPromise)
+                    .catch(showPromiseError);
+			},
+			queue: true
+		});
+}
+
+//Mostrar posibles errores en la consola
+function showPromiseError(error) 
+{
+	console.log(error);
+}
+
+//Eliminar dulces
+function deletesCandy() 
+{
+	return new Promise(function (resolve, reject) 
+    {
+		if ($('img.delete').remove()) 
+        {
+			resolve(true);
+		} 
+        else 
+        {
+			reject('No se pudo eliminar Candy...');
+		}
+	});
 }
