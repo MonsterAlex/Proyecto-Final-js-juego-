@@ -14,6 +14,33 @@ function color_dos()
 }
 color_uno()
 
+//Para iniciar el juego
+function initGame() 
+{
+
+	$('.btn-reinicio').click(function () 
+    {
+		if ($(this).text() === 'Reiniciar') 
+        {
+			location.reload(true);
+		}
+        
+		checkBoard();
+		
+        $(this).text('Reiniciar');
+		
+        $('#timer').startTimer(
+        {
+			onComplete: endGame
+		});
+	});
+}
+
+$(function () 
+{
+	initGame();
+});
+
 //Funcion de Random
 function getRandomInt(min, max) 
 {
@@ -66,4 +93,288 @@ function candyColumns(index)
 {
     var candyColumn = giveCandyArrays('columns');
 	return candyColumn[index];
+}
+
+// Validacion de la columna de dulces
+function columnValidation() 
+{
+    for (var j = 0; j < 7; j++) 
+    {
+        var counter = 0;
+		var candyPosition = [];
+		var extraCandyPosition = [];
+		var candyColumn = candyColumns(j);
+		var comparisonValue = candyColumn.eq(0);
+		var gap = false;
+		
+        for (var i = 1; i < candyColumn.length; i++) 
+        {
+            var srcComparison = comparisonValue.attr('src');
+			var srcCandy = candyColumn.eq(i).attr('src');
+
+			if (srcComparison != srcCandy) 
+            {
+                if (candyPosition.length >= 3) 
+                {
+					gap = true;
+				} 
+                else 
+                {
+				    candyPosition = [];
+				}
+				counter = 0;
+			} 
+            else 
+            {
+                if (counter == 0) 
+                {
+					if (!gap) 
+                    {
+						candyPosition.push(i - 1);
+					} 
+                    else 
+                    {
+						extraCandyPosition.push(i - 1);
+					}
+				}
+				
+                if (!gap) 
+                {
+					candyPosition.push(i);
+				} 
+                else 
+                {
+					extraCandyPosition.push(i);
+				}
+				counter += 1;
+			}
+			comparisonValue = candyColumn.eq(i);
+		}
+		
+        if (extraCandyPosition.length > 2) 
+        {
+			candyPosition = $.merge(candyPosition, extraCandyPosition);
+		}
+		
+        if (candyPosition.length <= 2) 
+        {
+			candyPosition = [];
+		}
+		candyCount = candyPosition.length;
+		
+        if (candyCount >= 3) 
+        {
+			deleteColumnCandy(candyPosition, candyColumn);
+			setScore(candyCount);
+		}
+	}
+}
+
+// Eliminar dulces de una columna
+function deleteColumnCandy(candyPosition, candyColumn) 
+{
+    for (var i = 0; i < candyPosition.length; i++) 
+    {
+		candyColumn.eq(candyPosition[i]).addClass('delete');
+	}
+}
+
+/// Validar Fila de Dulces
+function rowValidation() 
+{
+    for (var j = 0; j < 6; j++) 
+    {
+        var counter = 0;
+		var candyPosition = [];
+		var extraCandyPosition = [];
+		var candyRow = candyRows(j);
+		var comparisonValue = candyRow[0];
+		var gap = false;
+		
+        for (var i = 1; i < candyRow.length; i++) 
+        {
+			var srcComparison = comparisonValue.attr('src');
+			var srcCandy = candyRow[i].attr('src');
+
+			if (srcComparison != srcCandy) 
+            {
+				if (candyPosition.length >= 3) 
+                {
+					gap = true;
+				} 
+                else 
+                {
+					candyPosition = [];
+				}
+				counter = 0;
+			} 
+            else 
+            {
+                if (counter == 0) 
+                {
+					if (!gap) 
+                    {
+						candyPosition.push(i - 1);
+					} 
+                    else 
+                    {
+						extraCandyPosition.push(i - 1);
+					}
+				}
+				
+                if (!gap) 
+                {
+					candyPosition.push(i);
+				} 
+                else 
+                {
+					extraCandyPosition.push(i);
+				}
+				counter += 1;
+			}
+			comparisonValue = candyRow[i];
+		}
+		
+        if (extraCandyPosition.length > 2) 
+        {
+			candyPosition = $.merge(candyPosition, extraCandyPosition);
+		}
+		
+        if (candyPosition.length <= 2) 
+        {
+			candyPosition = [];
+		}
+		
+        candyCount = candyPosition.length;
+		if (candyCount >= 3) 
+        {
+			deleteHorizontal(candyPosition, candyRow);
+			setScore(candyCount);
+		}
+	}
+}
+
+//Eliminar Dulces de Una Fila
+function deleteHorizontal(candyPosition, candyRow) 
+{
+    for (var i = 0; i < candyPosition.length; i++) 
+    {
+		candyRow[candyPosition[i]].addClass('delete');
+	}
+}
+
+//Obtener Puntuacion Al Romper cierta cantidad de Dulces
+function setScore(candyCount) 
+{
+	var score = Number($('#score-text').text());
+	
+    switch (candyCount) 
+    {
+		case 3:
+			score += 25;
+			break;
+		case 4:
+			score += 50;
+			break;
+		case 5:
+			score += 75;
+			break;
+		case 6:
+			score += 100;
+			break;
+		case 7:
+			score += 200;
+	}
+	
+    $('#score-text').text(score);
+}
+
+/// LLenar Espacios en Blanco
+function checkBoard() 
+{
+	fillBoard();
+}
+
+function fillBoard() 
+{
+    var top = 6;
+	var column = $('[class^="col-"]');
+    
+	column.each(function () 
+    {
+        var candys = $(this).children().length;
+		var agrega = top - candys;
+		
+        for (var i = 0; i < agrega; i++) 
+        {
+			var candyType = getRandomInt(1, 5);
+			
+            if (i === 0 && candys < 1) 
+            {
+				$(this).append('<img src="image/' + candyType + '.png" class="element"></img>');
+			} 
+            else 
+            {
+				$(this).find('img:eq(0)').before('<img src="image/' + candyType + '.png" class="element"></img>');
+			}
+		}
+	});
+	addCandyEvents();
+	setValidations();
+}
+
+/// Validar Filas y columnas (Cuando exista coincidencia de dulces identicos) y activar eliminacion
+function setValidations() 
+{
+    columnValidation();
+	rowValidation();
+	
+    if ($('img.delete').length !== 0) 
+    {
+		deletesCandyAnimation();
+	}
+}
+
+//Agregar Dulces
+function addCandyEvents() 
+{
+	$('img').draggable(
+    {
+		containment: '.panel-tablero',
+		droppable: 'img',
+		revert: true,
+		revertDuration: 500,
+		grid: [100, 100],
+		zIndex: 10,
+		drag: constrainCandyMovement
+	});
+	
+    $('img').droppable(
+    {
+		drop: swapCandy
+	});
+	
+    enableCandyEvents();
+}
+
+//Hacer que los dulces se puedan mover de un lugar a otro
+function disableCandyEvents() 
+{
+	$('img').draggable('disable');
+	$('img').droppable('disable');
+}
+
+function enableCandyEvents() 
+{
+	$('img').draggable('enable');
+	$('img').droppable('enable');
+}
+
+//Evento para cuando un dulce es movido
+function constrainCandyMovement(event, candyDrag) 
+{
+	candyDrag.position.top = Math.min(100, candyDrag.position.top);
+	candyDrag.position.bottom = Math.min(100, candyDrag.position.bottom);
+	candyDrag.position.left = Math.min(100, candyDrag.position.left);
+	candyDrag.position.right = Math.min(100, candyDrag.position.right);
 }
